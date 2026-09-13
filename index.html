@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para alguien especial ✨</title>
+
+    <!-- FUENTES -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- Librería Canvas Confetti para los Fuegos Artificiales -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            overflow: hidden;
+            font-family: "Montserrat", sans-serif;
+            color: #ffffff;
+            background: #0b1326;
+        }
+
+        /* FONDO ELEGANTE */
+        .background {
+            position: fixed;
+            inset: 0;
+            z-index: -10;
+            background: linear-gradient(-45deg, #05070f, #0b1326, #14223d, #1e3254, #080d1a);
+            background-size: 400% 400%;
+            animation: gradientBG 12s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ESFERAS DE LUZ */
+        .glow-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            z-index: -9;
+            pointer-events: none;
+            animation: orbPulse 8s ease-in-out infinite alternate;
+        }
+
+        .glow-orb-1 {
+            width: 450px;
+            height: 450px;
+            top: -100px;
+            left: -100px;
+            background: radial-gradient(circle, #ff2a8d, transparent);
+        }
+
+        .glow-orb-2 {
+            width: 500px;
+            height: 500px;
+            bottom: -150px;
+            right: -100px;
+            background: radial-gradient(circle, #38bdf8, transparent);
+        }
+
+        @keyframes orbPulse {
+            0% { transform: scale(0.9) translate(0, 0); opacity: 0.4; }
+            100% { transform: scale(1.25) translate(30px, -40px); opacity: 0.7; }
+        }
+
+        /* ESCENAS CON ANIMACIÓN SUAVE DE ENTRADA Y SALIDA */
+        .scene {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.96);
+            transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out, visibility 1.5s;
+            z-index: 10;
+        }
+
+        .scene.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        .content {
+            width: min(900px, 92vw);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* CAJA CON BORDE ROSADO REINTENSICADO */
+        .text-box-frame {
+            width: 100%;
+            max-width: 750px;
+            padding: 40px 30px;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 2px solid rgba(255, 119, 188, 0.6);
+            border-radius: 24px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 119, 188, 0.25), 0 0 15px rgba(255, 119, 188, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        /* CONTENEDOR DE TEXTO */
+        .fade-text {
+            font-family: "Cormorant Garamond", serif;
+            font-size: clamp(34px, 5.5vw, 58px);
+            line-height: 1.35;
+            color: #ffffff;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+            min-height: 150px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+        }
+
+        .fade-text.show {
+            opacity: 1;
+        }
+
+        .small {
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #ffb7d5;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+
+        .highlight, .pink { 
+            color: #ff77bc;
+            text-shadow: 0 0 15px rgba(255, 119, 188, 0.6);
+        }
+
+        /* BOTONES CON DETALLE ROSADO */
+        .button {
+            margin-top: 25px;
+            padding: 16px 38px;
+            border: 1px solid rgba(255, 182, 218, 0.6);
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            color: #ffffff;
+            font-family: "Montserrat", sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .button.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .button:hover {
+            background: #ff2a8d;
+            border-color: #ff77bc;
+            color: white;
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 12px 35px rgba(255, 42, 141, 0.5);
+        }
+
+        /* ESTRELLA NEUTRA */
+        .sparkle-icon {
+            font-size: 40px;
+            color: #ff77bc;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 15px rgba(255, 119, 188, 0.8));
+            animation: sparklePulse 2.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes sparklePulse {
+            0% { transform: scale(0.95) rotate(0deg); opacity: 0.8; }
+            100% { transform: scale(1.15) rotate(10deg); opacity: 1; }
+        }
+
+        /* RECUERDOS */
+        .memory-scene { flex-direction: column; }
+        .memory-number {
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            color: #ffb7d5;
+        }
+
+        .memory-layout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 50px;
+            width: min(1100px, 90vw);
+        }
+
+        .memory-photo {
+            width: min(420px, 42vw);
+            height: min(520px, 60vh);
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            transform: rotate(-2deg);
+        }
+
+        .memory-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+            display: block;
+        }
+
+        .memory-text { width: 350px; text-align: left; }
+        .memory-text h2 { font-family: "Cormorant Garamond", serif; font-size: clamp(42px, 4vw, 65px); color: #ff77bc; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .memory-text p { font-family: "Cormorant Garamond", serif; font-size: 24px; line-height: 1.4; color: #ffe4e6; }
+
+        .timer {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 250px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            border-radius: 4px;
+        }
+
+        .timer-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #ff77bc, #38bdf8); }
+
+        /* PASTEL Y VELA - MARGEN SUPERIOR AJUSTADO PARA EVITAR SUPERPOSICIÓN CON EL TEXTO */
+        .cake-container {
+            position: relative;
+            display: inline-block;
+            margin: 80px auto 25px;
+        }
+
+        .cake {
+            position: relative;
+            width: 190px;
+            height: 95px;
+            background: linear-gradient(#ff499e, #b81d6d);
+            border-radius: 14px 14px 22px 22px;
+            box-shadow: 0 15px 45px rgba(255, 73, 158, 0.4);
+        }
+
+        .cake::before {
+            content: "";
+            position: absolute;
+            top: -12px;
+            left: 0;
+            width: 100%;
+            height: 24px;
+            background: #ffb7d5;
+            border-radius: 50%;
+        }
+
+        .candle {
+            position: absolute;
+            width: 14px;
+            height: 55px;
+            background: linear-gradient(#ffffff, #ffe4e6);
+            left: 88px;
+            top: -55px;
+            border-radius: 4px;
+        }
+
+        .flame {
+            position: absolute;
+            width: 24px;
+            height: 32px;
+            left: -5px;
+            top: -27px;
+            background: radial-gradient(#fff, #fbbf24, #f59e0b);
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            cursor: pointer;
+            box-shadow: 0 0 25px #f59e0b, 0 0 60px #fbbf24;
+            animation: flame 1.2s infinite alternate ease-in-out;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        @keyframes flame {
+            0% { transform: rotate(-45deg) scale(1); }
+            100% { transform: rotate(-43deg) scale(1.18); }
+        }
+
+        .flame.off {
+            opacity: 0;
+            transform: rotate(-45deg) scale(0);
+            pointer-events: none;
+        }
+
+        .wish-revelation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 15px;
+        }
+
+        .wish-photo {
+            width: 180px;
+            height: 220px;
+            padding: 8px;
+            background: white;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            border-radius: 8px;
+            transform: rotate(-3deg);
+        }
+
+        .wish-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .final-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            padding: 40px 35px;
+            border-radius: 24px;
+            border: 2px solid rgba(255, 119, 188, 0.6);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 119, 188, 0.25);
+        }
+
+        @media(max-width: 800px) {
+            .text-box-frame { padding: 30px 20px; }
+            .memory-layout { flex-direction: column; gap: 15px; }
+            .memory-photo { width: 75vw; height: 35vh; }
+            .memory-text { width: 90vw; text-align: center; }
+            .wish-revelation { flex-direction: column; gap: 10px; }
+            .wish-photo { width: 140px; height: 170px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="background"></div>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+
+    <audio id="musica-fondo" preload="auto">
+        <source src="instrumental2.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- ESCENA 1 -->
+    <section class="scene active" id="scene1">
+        <div class="content">
+            <div class="text-box-frame">
+                <div class="sparkle-icon">✦</div>
+                <div class="fade-text" id="text-scene1"></div>
+            </div>
+            <button class="button" id="btn-scene1" onclick="startExperience()">COMENZAR ✨</button>
+        </div>
+    </section>
+
+    <!-- ESCENA 2 -->
+    <section class="scene" id="scene2">
+        <div class="content">
+            <div class="text-box-frame">
+                <div class="small">Antes de empezar...</div>
+                <div class="fade-text" id="text-scene2"></div>
+            </div>
+            <button class="button" id="btn-scene2" onclick="startMemories()">VER TUS RECUERDOS</button>
+        </div>
+    </section>
+
+    <!-- RECUERDOS (1 AL 7) -->
+    <section class="scene memory-scene" id="memory1">
+        <div class="memory-number">RECUERDO 01 / 07</div>
+        <div class="memory-layout">
+            <div class="memory-photo"><img src="img/img1.jpeg" alt="Recuerdo 1"></div>
+            <div class="memory-text">
+                <div class="small">NUESTRA</div>
+                    <h2>Primera salida</h2>
+                    <p>Fue de paseo con los jóvenes de Star Teens.<br><br>
+                        ¡Recuerdo que ese día conversamos y empecé a <span class="highlight">conocerte mejor!</span>
+                    </p>
+            </div>
+        </div>
+        <div class="timer"><div class="timer-bar" id="bar1"></div></div>
+    </section>
+
+    <section class="scene memory-scene" id="memory2">
+        <div class="memory-number">RECUERDO 02 / 07</div>
+        <div class="memory-layout">
+            <div class="memory-photo"><img src="img/img2.jpeg" alt="Recuerdo 2"></div>
+            <div class="memory-text">
+                <div class="small">LA ÚNICA VEZ</div>
+                <h2>Formamos equipo</h2>
+                <p>
+                    Cuando realizamos el taller para los estudiantes, me gusto hacer equipo contigo...<br><br>
+                    ¡Aprendí mucho <span class="highlight">de ti!</span>
+                </p>
+            </div>
+        </div>
+        <div class="timer"><div class="timer-bar" id="bar2"></div></div>
+    </section>
+
+    <section class="scene memory-scene" id="memory3">
+        <div class="memory-number">RECUERDO 03 / 07</div>
+        <div class="memory-layout">
+            <div class="memory-photo"><img src="img/img3.jpeg" alt="Recuerdo 3"></div>
+            <div class="memory-text">
+                <div class="small">EL MEJOR MOMENTO</div>
+                <h2>Salimos a comer Makis</h2>
+                <p>
+                    Me acuerdo que con un papelito me invitaron, y cuando bajamos en metro deciamos que íbamos a hacer compras...<br><br>
+                    ¡Fue el inicio de las <span class="highlight">muchas salidas que comimos makis!</span>
+                </p>
+            </div>
+        </div>
+        <div class="timer"><div class="timer-bar" id="bar3"></div></div>
+    </section>
+
+    <section class="scene memory-scene" id="memory4">
+        <div class="memory-number">RECUERDO 04 / 07</div>
+        <div class="memory-layout">
+            <div class="memory-photo"><img src="img/img4.jpeg" alt="Recuerdo 4"></div>
+            <div class="memory-text">
+                <div class="small">SALIDA ESPONTÁNEA</div>
+                <h2>Con la señora Claudia</h2>
+                <p>
+                    Cuando no sabíamos qué comer y a las finales fuimos a una sanguchetería...<br><br>
+                    En esa ocasión recuerdo que te decíamos que <span class="highlight">estabas en pijama.</span>
+                </p>
+            </div>
+        </div>
+        <div class="timer"><div class="timer-bar" id="bar4"></div></div>
+    </section>
+
+    <section class="scene memory-scene" id="memory5">
+        <div class="memory-number">RECUERDO 05 / 07</div>
+        <div class="memory-layout">
+            <div class="memory-photo"><img src="img/img5.jpeg" alt="Recuerdo 5"></div>
+            <div class="memory-text">
+                <div class="small">UN RECUERDO MÁS</div>
+                <h2>Viaje a Orcotuna</h2>
+                <p>
+                    Nos fuimos caminando hasta el río...<br><br>
+                    ¡A nuestro modo lo <span class="highlight">disfrutamos!</span>  
+                </p>
+            </div>
+        </div>
+        <div class="timer"><div class="timer-bar" id="bar5"></div></div>
+    </section>
+
+    <section class="scene memory-scene" id="memory6">
+        <div class="memory-number">RECUERDO 06 / 07</div>
+        <div class="memory-layout">
+            <div class="memory-photo"><img src="img/img6.jpeg" alt="Recuerdo 6"></div>
+            <div class="memory-text">
+                <div class="small">CASI AL FINAL</div>
+                <h2>Un recuerdo más</h2>
+                <p>Siempre aprovechando para tomarnos fotos<br><br>Pero falta el último.</p>
+            </div>
+        </div>
+        <div class="timer"><div class="timer-bar" id="bar6"></div></div>
+    </section>
+
+    <!-- RECUERDO 7 -->
+    <section class="scene memory-scene" id="memory7">
+        <div class="memory-number">RECUERDO 07 / 07</div>
+        <div class="memory-layout">
+            <div class="memory-photo"><img src="img/img7.jpeg" alt="Recuerdo 7"></div>
+            <div class="memory-text">
+                <div class="memory-text">
+                    <div class="small">EL ÚLTIMO RECUERDO</div>
+                    <h2>Salida improvisada...</h2>
+                    <p>
+                        La primera vez que tomaste la iniciativa para salir.<br><br>
+                        Disfruté mucho de tu compañía y la de Scarlett, además fuiste una excelente guía...<br><br>
+                        <span class="highlight">P.D.¡Quería ese Snorlax! 🧸</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="timer"><div class="timer-bar" id="bar7"></div></div>
+    </section>
+
+    <!-- ESCENA 10 -->
+    <section class="scene" id="scene10">
+        <div class="content">
+            <div class="text-box-frame">
+                <div class="small">Hay algo que quería decirte</div>
+                <div class="fade-text" id="text-scene10"></div>
+            </div>
+            <button class="button" id="btn-scene10" onclick="goToRomantic()">CONTINUAR</button>
+        </div>
+    </section>
+
+    <!-- ESCENA 11 -->
+    <section class="scene" id="scene11">
+        <div class="content">
+            <div class="text-box-frame">
+                <div class="small">Y hay algo más...</div>
+                <div class="fade-text" id="text-scene11"></div>
+            </div>
+            <button class="button" id="btn-scene11" onclick="goToBirthday()">UNA ÚLTIMA COSA</button>
+        </div>
+    </section>
+
+    <!-- ESCENA 12 -->
+    <section class="scene" id="scene12">
+        <div class="content">
+            <div class="small">Un momento especial</div>
+            <h2 style="font-family:'Cormorant Garamond',serif; font-size:48px; color:#ff77bc; text-shadow: 0 0 15px rgba(255,119,188,0.5);" id="title-scene12">Pide un deseo ✨</h2>
+            <p id="instructionText" style="color:#ffe4e6; margin-top: 5px;">Haz clic en la llama para apagarla.</p>
+
+            <div class="cake-container" id="cakeContainer">
+                <div class="cake">
+                    <div class="candle">
+                        <div class="flame" id="flame" onclick="blowCandle()"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="birthdayMessage" style="display:none;">
+                <div class="wish-revelation">
+                    <div class="wish-photo">
+                        <img src="https://images.unsplash.com/photo-1513201099705-a9746e1e201f?w=500" alt="Foto deseo">
+                    </div>
+                    <div style="text-align: left; max-width: 400px;">
+                        <div class="text-box-frame" style="padding: 20px;">
+                            <div class="fade-text" id="text-scene12" style="font-size:30px; min-height:100px; justify-content: flex-start;"></div>
+                        </div>
+                    </div>
+                </div>
+                <button class="button" id="btn-scene12" onclick="goToFinal()">VER MENSAJE FINAL ✨</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ESCENA 13 -->
+    <section class="scene" id="scene13">
+        <div class="content">
+            <div class="final-card">
+                <div class="sparkle-icon">✦</div>
+                <div class="small">Con todo mi cariño</div>
+                <div class="fade-text" id="text-scene13" style="font-size: clamp(30px, 4vw, 48px); font-style: italic; color: #ffffff; min-height: 180px;"></div>
+                <button class="button" id="btn-scene13" onclick="restartExperience()" style="background: rgba(255, 255, 255, 0.2);">↻ VOLVER A VER</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const memories = [
+            { scene: "memory1", bar: "bar1", time: 9000 },
+            { scene: "memory2", bar: "bar2", time: 9000 },
+            { scene: "memory3", bar: "bar3", time: 9000 },
+            { scene: "memory4", bar: "bar4", time: 9000 },
+            { scene: "memory5", bar: "bar5", time: 9000 },
+            { scene: "memory6", bar: "bar6", time: 9000 },
+            { scene: "memory7", bar: "bar7", time: 9000 }
+        ];
+
+        let currentMemory = 0;
+        let isCandleBlown = false;
+        let activeTimeouts = [];
+
+        function clearAllTimeouts() {
+            activeTimeouts.forEach(id => clearTimeout(id));
+            activeTimeouts = [];
+        }
+
+        function safeSetTimeout(fn, delay) {
+            const id = setTimeout(() => {
+                fn();
+                activeTimeouts = activeTimeouts.filter(tId => tId !== id);
+            }, delay);
+            activeTimeouts.push(id);
+            return id;
+        }
+
+        function fadeOutAudio(audio, duration = 2000) {
+            if (!audio || audio.paused) return;
+            const startVolume = audio.volume;
+            const step = startVolume / (duration / 50);
+
+            const fadeInterval = setInterval(() => {
+                if (audio.volume - step > 0) {
+                    audio.volume -= step;
+                } else {
+                    audio.volume = 0;
+                    audio.pause();
+                    audio.currentTime = 0;
+                    clearInterval(fadeInterval);
+                }
+            }, 50);
+        }
+
+        function playTextSequence(elementId, buttonId, sequence) {
+            const el = document.getElementById(elementId);
+            const btn = buttonId ? document.getElementById(buttonId) : null;
+            if (btn) btn.classList.remove("show");
+
+            let index = 0;
+
+            function showNext() {
+                if (index >= sequence.length) {
+                    if (btn) btn.classList.add("show");
+                    return;
+                }
+
+                const currentItem = sequence[index];
+                const text = typeof currentItem === 'object' ? currentItem.text : currentItem;
+
+                el.innerHTML = text;
+                el.classList.add("show");
+
+                if (index === sequence.length - 1) {
+                    if (btn) btn.classList.add("show");
+                } else {
+                    safeSetTimeout(() => {
+                        el.classList.remove("show");
+                        index++;
+                        safeSetTimeout(showNext, 2000); 
+                    }, 4000);
+                }
+            }
+
+            showNext();
+        }
+
+        function showScene(id) {
+            document.querySelectorAll(".scene").forEach(scene => {
+                scene.classList.remove("active");
+            });
+            const target = document.getElementById(id);
+            if (target) {
+                target.classList.add("active");
+            }
+        }
+
+        window.onload = () => {
+            playTextSequence("text-scene1", "btn-scene1", [
+                { text: "Hola! <br><span class='pink'>Julissa Acosta Valer</span>" },
+                { text: "Tengo una sorpresa para ti" },
+                { text: "Hoy es un día muy especial..." },
+                { text: "Y tengo algo que quiero enseñarte." }
+            ]);
+        };
+
+        function startExperience() {
+            const audio = document.getElementById('musica-fondo');
+            if (audio) {
+                audio.currentTime = 0;
+                audio.volume = 0.4;
+                audio.play().catch(e => console.log("Audio no bloqueado"));
+            }
+            showScene("scene2");
+
+            playTextSequence("text-scene2", "btn-scene2", [
+                { text: "Hoy es tu día." },
+                { text: "Y entre todos los mensajes que vas a recibir hoy..." },
+                { text: "Quería que este fuera un poco diferente. ¡Espero te guste!" }
+            ]);
+        }
+
+        function startMemories() {
+            currentMemory = 0;
+            showMemory();
+        }
+
+        function showMemory() {
+            if (currentMemory >= memories.length) {
+                const audio = document.getElementById('musica-fondo');
+                fadeOutAudio(audio, 2000);
+                
+                goToLetter();
+                return;
+            }
+
+            const memory = memories[currentMemory];
+            const currentSceneEl = document.getElementById(memory.scene);
+
+            // 1. Mostrar la escena (Fade-in)
+            showScene(memory.scene);
+
+            // 2. Reiniciar y animar la barra de tiempo
+            const bar = document.getElementById(memory.bar);
+            bar.style.transition = "none";
+            bar.style.width = "0%";
+
+            safeSetTimeout(() => {
+                bar.style.transition = `width ${memory.time}ms linear`;
+                bar.style.width = "100%";
+            }, 100);
+
+            // 3. Iniciar el desvanecimiento (Fade-out) 1.5s antes de avanzar
+            const fadeOutDelay = Math.max(memory.time - 1500, 1000);
+            safeSetTimeout(() => {
+                if (currentSceneEl) {
+                    currentSceneEl.classList.remove("active");
+                }
+            }, fadeOutDelay);
+
+            // 4. Pasar a la siguiente escena
+            safeSetTimeout(() => {
+                currentMemory++;
+                showMemory();
+            }, memory.time + 300);
+        }
+
+        /* SECUENCIAS DE TEXTO REVISADAS Y CORREGIDAS */
+        function goToLetter() {
+            showScene("scene10");
+            playTextSequence("text-scene10", "btn-scene10", [
+                { text: "Hoy es tu cumpleaños y quería hacerte este pequeño detalle..." },
+                { text: "Porque cada momento que compartimos juntos se vuelve un lindo recuerdo." },
+                { text: "Y si algún día dudas de lo especial que eres..." },
+                { text: "Recuerda que hubo alguien que se tomó el tiempo de crear todo esto solamente para recordártelo." },
+                { text: "<span class='highlight'>¡Feliz cumpleaños! 🎉</span>" }
+            ]);
+        }
+
+        function goToRomantic() {
+            showScene("scene11");
+            playTextSequence("text-scene11", "btn-scene11", [
+                { text: "No sé qué va a pasar en el futuro..." },
+                { text: "Pero solo quería decirte esto:" },
+                { text: "<strong>¡Gracias por nunca tratarme diferente y motivarme a no rendirme!</strong>" }
+            ]);
+        }
+
+        function goToBirthday() {
+            showScene("scene12");
+        }
+
+        function blowCandle() {
+            if (isCandleBlown) return;
+            isCandleBlown = true;
+
+            const flame = document.getElementById("flame");
+            flame.classList.add("off");
+            document.getElementById("instructionText").style.display = "none";
+            document.getElementById("title-scene12").style.display = "none";
+
+            launchFireworks();
+
+            safeSetTimeout(() => {
+                document.getElementById("birthdayMessage").style.display = "block";
+                
+                playTextSequence("text-scene12", "btn-scene12", [
+                    { text: "¡Deseo de todo corazón que se cumplan todos tus sueños!" },
+                    { text: "Espero que cada día tengas muchas razones para sonreír..." },
+                    { text: "<span class='pink'>¡Porque de eso se trata la vida, de sonreír y disfrutar!</span>" }
+                ]);
+            }, 500);
+        }
+
+        function goToFinal() {
+            showScene("scene13");
+            launchFireworks();
+
+            playTextSequence("text-scene13", "btn-scene13", [
+                { text: "\"Hay personas que hacen el mundo más bonito solo por estar en él.\"" },
+                { text: "Tú eres una de ellas." },
+                { text: "¡Gracias por ser tú!<br><span class='pink'>Feliz cumpleaños, Julissa 🌸</span>" }
+            ]);
+        }
+
+        function restartExperience() {
+            clearAllTimeouts();
+            
+            isCandleBlown = false;
+            currentMemory = 0;
+            
+            document.getElementById("flame").classList.remove("off");
+            document.getElementById("birthdayMessage").style.display = "none";
+            document.getElementById("instructionText").style.display = "block";
+            document.getElementById("title-scene12").style.display = "block";
+            
+            const audio = document.getElementById('musica-fondo');
+            if (audio) {
+                audio.pause();
+                audio.currentTime = 0;
+            }
+
+            showScene("scene1");
+            playTextSequence("text-scene1", "btn-scene1", [
+                { text: "Hola! <br><span class='pink'>Julissa Acosta Valer</span>" },
+                { text: "Tengo una sorpresa para ti" },
+                { text: "Hoy es un día muy especial..." },
+                { text: "Y tengo algo que quiero enseñarte." }
+            ]);
+        }
+
+        // --- EFECTO DE FUEGOS ARTIFICIALES (FIREWORKS) ---
+        function launchFireworks() {
+            const duration = 4 * 1000;
+            const animationEnd = Date.now() + duration;
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                confetti({
+                    startVelocity: 40,
+                    spread: 360,
+                    ticks: 100,
+                    origin: { x: randomInRange(0.15, 0.4), y: Math.random() - 0.2 },
+                    colors: ['#ff77bc', '#ec4899', '#fbbf24', '#ffffff', '#38bdf8'],
+                    shapes: ['circle', 'star'],
+                    gravity: 0.75,
+                    scalar: 1.25
+                });
+                
+                confetti({
+                    startVelocity: 40,
+                    spread: 360,
+                    ticks: 100,
+                    origin: { x: randomInRange(0.6, 0.85), y: Math.random() - 0.2 },
+                    colors: ['#ff77bc', '#ec4899', '#fbbf24', '#ffffff', '#38bdf8'],
+                    shapes: ['circle', 'star'],
+                    gravity: 0.75,
+                    scalar: 1.25
+                });
+            }, 400);
+        }
+
+        function randomInRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+    </script>
+</body>
+</html>
